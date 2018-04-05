@@ -17,11 +17,30 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	int score = 0;
     	int captured = 0;
     	int captureCenter = 0;
+    	
+    	// get my player id
     	int player_id = clonedBS.getTurnPlayer();
     	    	
     	 // look at opponent and its number of pieces
-        int opponent = clonedBS.getOpponent();
+        int opponent = clonedBS.getOpponent();        
         int minNumberOfOpponentPieces = bs.getNumberPlayerPieces(opponent);
+        // Check how many opponent pieces there are now, maybe we captured some!
+        int newNumberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
+        
+        // Check if any opponents were captured, move better if we capture more
+        if (newNumberOfOpponentPieces < minNumberOfOpponentPieces) {
+        	int numberCaptured = minNumberOfOpponentPieces - newNumberOfOpponentPieces; 
+        	// could change amount I multiply this by 
+        	captured = numberCaptured*15;
+        }
+        
+        int numberOfPieces = bs.getNumberPlayerPieces(player_id);
+        int newNumberOfPieces = clonedBS.getNumberPlayerPieces(player_id);
+        
+        // penalize board if we lost players
+        if (newNumberOfPieces < numberOfPieces) {
+        	score -= 15;
+        }
 
         // will be used for checking if capture is possible
         Coord center = Coordinates.get(4,4);
@@ -37,22 +56,8 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         		cornerNeighbors.add(neighbor);
         	}
         }
-    	
-        // Check how many opponent pieces there are now, maybe we captured some!
-        int newNumberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
 
-        int numberOfPieces = clonedBS.getNumberPlayerPieces(player_id);
         
-        if (newNumberOfOpponentPieces < minNumberOfOpponentPieces) {
-        	int numberCaptured = minNumberOfOpponentPieces - newNumberOfOpponentPieces; 
-        	// could change amount I multiply this by 
-        	if(player_id == TablutBoardState.MUSCOVITE) {
-        		captured = numberCaptured*5; 
-        	}
-        	else {
-        		captured = numberCaptured*3;
-        	}
-        }
         
         // for all positions next to the center, see if you can get rid of an enemy
         //  (prioritize this over other kinds of captures)
@@ -63,20 +68,16 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         	}
         }
         
-        if(player_id == TablutBoardState.SWEDE) {
-        	for (Coord neighbor : cornerNeighbors) {
-            	if (bs.isOpponentPieceAt(neighbor) && clonedBS.coordIsEmpty(neighbor)) {
-            		score += 100;
-            	}
-            }
+    	for (Coord neighbor : cornerNeighbors) {
+        	if (bs.isOpponentPieceAt(neighbor) && clonedBS.coordIsEmpty(neighbor)) {
+        		score += 100;
+        	}
         }
     
         
         int minDistance = Coordinates.distanceToClosestCorner(startKingPos);
 
         score += captured;
-        score -= newNumberOfOpponentPieces*100;
-        score += numberOfPieces*150;
         
         if(player_id == TablutBoardState.MUSCOVITE) {
             score += captureCenter; 
@@ -160,8 +161,6 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 
             // Process that move, as if we actually made it happen.
             cloneBS.processMove(move);
-           // System.out.println("Original state turn player : " + state.getTurnPlayer());
-            // System.out.println("Cloned state turn player: " + cloneBS.getTurnPlayer());
             int moveScore = MIN(state, cloneBS, depth + 1, player);
             if (moveScore > bestScore) {
             	bestScore = moveScore;

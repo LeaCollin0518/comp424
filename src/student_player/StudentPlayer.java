@@ -49,12 +49,12 @@ public class StudentPlayer extends TablutPlayer {
     public static void main(String[] args) {
     	int i = 0;
     	int numWins = 0;
-    	while(i < 500) {
+    	while(i < 50) {
     		TablutBoardState b = new TablutBoardState();
-            Player swede = new GreedyTablutPlayer();
+            Player swede = new StudentPlayer();
             swede.setColor(TablutBoardState.SWEDE);
 
-            Player muscovite = new StudentPlayer();
+            Player muscovite = new GreedyTablutPlayer();
             muscovite.setColor(TablutBoardState.MUSCOVITE);
             
             Player player = muscovite;
