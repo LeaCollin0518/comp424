@@ -84,8 +84,11 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
             score -= minDistance;
         } 
         
+        // has the king moved yet?
         else {
-        	score += minDistance;
+        	if(clonedBS.getTurnNumber() > 30 && !startKingPos.equals(endKingPos)) {
+        		score += 100;
+        	}	
         }
         
         try {
