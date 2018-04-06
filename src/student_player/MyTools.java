@@ -48,7 +48,6 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 
         // will be used for checking if capture is possible
         Coord center = Coordinates.get(4,4);
-        Coord startKingPos = bs.getKingPosition();
         Coord endKingPos = clonedBS.getKingPosition();
         
         
@@ -145,7 +144,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	
     }
     
-    public static Move minimax(TablutBoardState state, int player) {
+    public static Move minimax(TablutBoardState state, int player, int alpha, int beta) {
     	Move myMove = state.getRandomMove();
     	int depth = 0;
     	int bestScore = Integer.MIN_VALUE;
@@ -157,7 +156,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 
             // Process that move, as if we actually made it happen.
             cloneBS.processMove(move);
-            int moveScore = MIN(state, cloneBS, depth + 1, player);
+            int moveScore = MIN(state, cloneBS, depth + 1, player, alpha, beta);
             if (moveScore > bestScore) {
             	bestScore = moveScore;
             	myMove = move;
@@ -167,8 +166,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	return myMove;
     }
     
-    public static int MIN(TablutBoardState state, TablutBoardState clonedBS, int depth, int player) {
-    	int bestScore;
+    public static int MIN(TablutBoardState state, TablutBoardState clonedBS, int depth, int player, int alpha, int beta) {
     	if(clonedBS.getWinner() == 1 || clonedBS.getWinner() == 0) {
     		if(clonedBS.getWinner() == player) {
     			return Integer.MAX_VALUE;
@@ -181,24 +179,24 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     		return -1*evaluateBoard(state, clonedBS);
     	}
     	else {
-    		bestScore = Integer.MAX_VALUE;
     		List<TablutMove> options = clonedBS.getAllLegalMoves();
     		for(TablutMove move : options) {
     			TablutBoardState bs = (TablutBoardState) clonedBS.clone();
     			bs.processMove(move);
-    			int moveScore = MAX(clonedBS, bs, depth + 1, player);
-    			if(moveScore < bestScore) {
-    				bestScore = moveScore;
+    			int moveScore = MAX(clonedBS, bs, depth + 1, player, alpha, beta);
+    			if(moveScore < beta) {
+    				beta = moveScore;
+    			}
+    			if(beta <= alpha) {
+    				return beta;
     			}
     		}
+    		return beta;
     		
     	}
-    	
-    	return bestScore;
     }
     
-    public static int MAX(TablutBoardState state, TablutBoardState clonedBS, int depth, int player) {
-    	int bestScore;
+    public static int MAX(TablutBoardState state, TablutBoardState clonedBS, int depth, int player, int alpha, int beta) {
     	if(clonedBS.getWinner() == 1 || clonedBS.getWinner() == 0) {
     		if(clonedBS.getWinner() == player) {
     			return Integer.MAX_VALUE;
@@ -211,20 +209,21 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     		return evaluateBoard(state, clonedBS);
     	}
     	else {
-    		bestScore = Integer.MIN_VALUE;
     		List<TablutMove> options = clonedBS.getAllLegalMoves();
     		for(TablutMove move : options) {
     			TablutBoardState bs = (TablutBoardState) clonedBS.clone();
     			bs.processMove(move);
-    			int moveScore = MIN(clonedBS, bs, depth + 1, player);
-    			if(moveScore > bestScore) {
-    				bestScore = moveScore;
+    			int moveScore = MIN(clonedBS, bs, depth + 1, player, alpha, beta);
+    			if(moveScore > alpha) {
+    				alpha = moveScore;
+    			}
+    			if(alpha >= beta) {
+    				return alpha;
     			}
     		}
+    		return alpha;
     		
     	}
-    	
-    	return bestScore;
     }
 
 }
