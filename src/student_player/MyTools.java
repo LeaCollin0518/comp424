@@ -20,7 +20,16 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
 		
 		Coord center = Coordinates.get(4,4);
 		List<Coord> centerNeighbors = Coordinates.getNeighbors(center);
-				
+		List<Coord> corners = Coordinates.getCorners();
+		List<Coord> cornerNeighbors = new ArrayList<>();
+		
+		for(Coord corner : corners) {
+			for(Coord cornerNeighbor : Coordinates.getNeighbors(corner)) {
+				cornerNeighbors.add(cornerNeighbor);
+			}
+		}
+			
+		
 		//strategy for the swedes
 		if(bs.getTurnPlayer() == TablutBoardState.SWEDE) {
     		
@@ -60,6 +69,22 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
         			}
     			}
     			
+    			/*HashSet<Coord> opponentLocations = bs.getOpponentPieceCoordinates();
+    			List<Boolean> opponentAtEdge = new ArrayList<>();
+    			if(kingPos.x == 0 || kingPos.x == 8 || kingPos.y == 0 || kingPos.y == 8){
+    				for(Coord enemy : opponentLocations) {
+    					if(enemy.x == 0 || enemy.x == 8 || enemy.y == 0 || enemy.y == 8) {
+    						opponentAtEdge.add(false);
+    					}
+    				}
+    				if(opponentAtEdge.contains(true)) {
+    					for(boolean b : opponentAtEdge) {
+    						System.out.println(b);
+    					}
+    				}
+    			}*/
+    			
+    			
     			
     		}
     		catch(Exception e) {
@@ -70,19 +95,36 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
 		// strategy for the muscovites
 		else {
 			if(numOpponents < 9) {
-				int numCaptured = 5*(9 - numOpponents);
+				int numCaptured = 8*(9 - numOpponents);
 				score += numCaptured;
 			}
 			if(numPieces < 16) {
 				score -=3*(16 - numPieces);
 			}
+			try {
+    			Coord kingPos = bs.getKingPosition();
+    			score -= 5 * (8 - Coordinates.distanceToClosestCorner(kingPos));
+
+    			//is the king near any enemies, if so, how many?
+    			List<Coord> kingNeighbors = Coordinates.getNeighbors(kingPos);
+
+    			// is there a muscovite next to the king? good
+				for (Coord kingNeighbor : kingNeighbors) {
+    				if(!bs.isOpponentPieceAt(kingNeighbor) && bs.coordIsEmpty(kingNeighbor)) {
+    					score += 10;
+    				}
+    			}   			
+    			
+    		}
+    		catch(Exception e) {
+    			score += 0;
+    		}
 		}
 		
     	if(maxPlayer) {
     		if(bs.gameOver()) {
     			return bs.getWinner() == bs.getTurnPlayer() ? Integer.MAX_VALUE : Integer.MIN_VALUE;
     		}
-        	//score += bs.getNumberPlayerPieces(bs.getTurnPlayer()) - bs.getNumberPlayerPieces(bs.getOpponent());
     		return score;
     	}
     	else {
