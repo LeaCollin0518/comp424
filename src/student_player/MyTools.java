@@ -15,7 +15,6 @@ public class MyTools {
 public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) {
     	
     	int score = 0;
-    	int captured = 0;
     	int captureCenter = 0;
     	
     	// get my player id
@@ -23,21 +22,20 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	    	
     	 // look at opponent and its number of pieces
         int opponent = clonedBS.getOpponent();        
-        int minNumberOfOpponentPieces = bs.getNumberPlayerPieces(opponent);
-        // Check how many opponent pieces there are now, maybe we captured some!
-        int newNumberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
-        
+        int numberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
         // Check if any opponents were captured, move better if we capture more
-        if (newNumberOfOpponentPieces < minNumberOfOpponentPieces) {
-        	int numberCaptured = minNumberOfOpponentPieces - newNumberOfOpponentPieces; 
-        	// could change amount I multiply this by 
-        	if(bs.getTurnNumber() > 25) {
+        
+        if(player_id == TablutBoardState.SWEDE) {
+        	if(numberOfOpponentPieces < 16) {
+        		int numberCaptured = 16 - numberOfOpponentPieces;
         		score += numberCaptured*20;
         	}
-        	else {
-        		score += numberCaptured*15;
+        }
+        else {
+        	if(numberOfOpponentPieces < 9) {
+        		int numberCaptured = 9 - numberOfOpponentPieces;
+        		score += numberCaptured*30;
         	}
-        	
         }
         
         int numberOfPieces = bs.getNumberPlayerPieces(player_id);
@@ -45,13 +43,14 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         
         // penalize board if we lost players
         if (newNumberOfPieces < numberOfPieces) {
-        	score -= 10;
+        	score -= 50*(numberOfPieces - newNumberOfPieces);
         }
 
         // will be used for checking if capture is possible
         Coord center = Coordinates.get(4,4);
         Coord startKingPos = bs.getKingPosition();
         Coord endKingPos = clonedBS.getKingPosition();
+        
         
         List<Coord> corners = Coordinates.getCorners();
         List<Coord> centerNeighbors = Coordinates.getNeighbors(center);
@@ -70,28 +69,24 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         
         for (Coord neighbor : centerNeighbors) {
         	if (bs.isOpponentPieceAt(neighbor) && !clonedBS.isOpponentPieceAt(neighbor)) {
-        		captureCenter = 20;
+        		captureCenter = 50;
         	}
         }
         
     	for (Coord neighbor : cornerNeighbors) {
         	if (bs.isOpponentPieceAt(neighbor) && clonedBS.coordIsEmpty(neighbor)) {
-        		score += 100;
+        		score += 200;
         	}
         }
-    
-        
-        int minDistance = Coordinates.distanceToClosestCorner(startKingPos);
-        
+    	
         if(player_id == TablutBoardState.MUSCOVITE) {
             score += captureCenter; 
-            score -= minDistance;
         } 
-        
+
         // has the king moved yet?
         else {
-        	if(clonedBS.getTurnNumber() > 30 && !startKingPos.equals(endKingPos)) {
-        		score += 50;
+        	if(clonedBS.getTurnNumber() > 10 && !endKingPos.equals(center)) {
+        		score += 250;
         	}	
         }
         
@@ -106,21 +101,20 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		    	}
 		    }
 		    
-		   if (moveDistance < minDistance && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
-		        minDistance = moveDistance;
-		        kingScore += 20;
+		   if (moveDistance < 8 && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
+		        kingScore += 50;
 		    }
 		    else {
-		    	kingScore -= 30;
+		    	kingScore -= 50;
 		    }
 		    
 		    HashSet<Coord> opponentsAt = clonedBS.getOpponentPieceCoordinates();
 		    
-		    // check to see if final position is at the edge (but is not a corner
+		    // check to see if final position is at the edge (but is not a corner) and there is no one in the lane...Swedes win!
 		   if ((endKingPos.x == 0 || endKingPos.x == 8 || endKingPos.y == 0 || endKingPos.y == 8) && !cornerNeighbors.contains(endKingPos)) {
 		    	for(Coord enemy : opponentsAt) {
 	    			if (enemy.x != 0 || enemy.x != 8 || enemy.y != 8 || enemy.y != 8) {
-	        			kingScore += 3000;
+	        			kingScore += 5000;
 	        		}
 		    	}
 		    
@@ -146,7 +140,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         catch(Exception e) {
         	
         }
-
+        
         // if the moves leads to winning ... do it
         if (clonedBS.getWinner() == player_id) {
             score = Integer.MAX_VALUE;
