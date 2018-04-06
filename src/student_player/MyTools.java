@@ -52,10 +52,6 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         Coord startKingPos = bs.getKingPosition();
         Coord endKingPos = clonedBS.getKingPosition();
         
-        if(!startKingPos.equals(endKingPos)) {
-        	System.out.println("FUCK");
-        }
-        
         List<Coord> corners = Coordinates.getCorners();
         List<Coord> centerNeighbors = Coordinates.getNeighbors(center);
         List<Coord> cornerNeighbors = new ArrayList<>();
@@ -139,15 +135,23 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		    	}
 		    }
 		    
+		    int opponentsAtEdge = 0;
 		    // check to see if final position is at the edge (but is not a corner) and there is no one in the lane...Swedes win!
 		   if ((endKingPos.x == 0 || endKingPos.x == 8 || endKingPos.y == 0 || endKingPos.y == 8) && !cornerNeighbors.contains(endKingPos)) {
 		    	for(Coord enemy : opponentsAt) {
 	    			if (enemy.x != 0 || enemy.x != 8 || enemy.y != 8 || enemy.y != 8) {
 	        			kingScore += 5000;
 	        		}
+	    			else if (enemy.x == 0 || enemy.x == 8 || enemy.y == 8 || enemy.y == 8){
+	    				opponentsAtEdge ++;
+	    			}
 	    			else if(cornerNeighbors.contains(endKingPos)) {
 	    		    	kingScore = -30000;
 	    		    }
+	    			if(opponentsAtEdge >= 2) {
+	    				System.out.println("poop");
+	    				kingScore -= 5000;
+	    			}
 		    	}
 		    
 		   }
@@ -179,6 +183,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	List<TablutMove> options = state.getAllLegalMoves();
     	
     	for(TablutMove move : options) {
+    		int a = (int) (Math.random()*10);
     		TablutBoardState cloneBS = (TablutBoardState) state.clone();
 
             // Process that move, as if we actually made it happen.
@@ -187,6 +192,11 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
             if (moveScore > bestScore) {
             	bestScore = moveScore;
             	myMove = move;
+            }
+            else if (moveScore == bestScore && a < 3) {
+            	bestScore = moveScore;
+            	myMove = move;
+            	
             }
     	}
     	

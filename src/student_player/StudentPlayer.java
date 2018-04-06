@@ -1,5 +1,7 @@
 package student_player;
 
+import java.util.Random;
+
 import boardgame.Move;
 import boardgame.Player;
 import tablut.TablutBoardState;
@@ -49,7 +51,7 @@ public class StudentPlayer extends TablutPlayer {
     public static void main(String[] args) {
     	int i = 0;
     	int numWins = 0;
-    	while(i < 50) {
+    	while(i < 100) {
     		TablutBoardState b = new TablutBoardState();
             Player swede = new StudentPlayer();
             swede.setColor(TablutBoardState.SWEDE);
@@ -71,13 +73,11 @@ public class StudentPlayer extends TablutPlayer {
             	numWins++;
             }
             else {
-            	System.out.println("Lost :(");
-            	System.out.println("Number of moves : " + b.getTurnNumber());
+            	break;
             }
             //System.out.println(TablutMove.getPlayerName(b.getWinner()) + " WIN!");
             i++;
     	}
-    	System.out.println("Number of wins: " + numWins);
-        
+    	System.out.println("Number of wins: " + numWins); 
     }
 }
