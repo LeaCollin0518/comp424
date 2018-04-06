@@ -101,11 +101,14 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		    	}
 		    }
 		    
-		   if (moveDistance < 8 && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
+		    if (moveDistance < 8 && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
 		        kingScore += 50;
 		    }
+		    else if(presentOpponents.size() > 1){
+		    	kingScore -= 500;
+		    }
 		    else {
-		    	kingScore -= 50;
+		    	kingScore -= 200;
 		    }
 		    
 		    HashSet<Coord> opponentsAt = clonedBS.getOpponentPieceCoordinates();
@@ -116,16 +119,13 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 	    			if (enemy.x != 0 || enemy.x != 8 || enemy.y != 8 || enemy.y != 8) {
 	        			kingScore += 5000;
 	        		}
+	    			else if(cornerNeighbors.contains(endKingPos)) {
+	    		    	kingScore = -30000;
+	    		    }
 		    	}
 		    
 		   }
-		    
-		    if(cornerNeighbors.contains(endKingPos)) {
-		    	kingScore = -30000;
-		    }
-		    if(Coordinates.isCorner(endKingPos)) {
-		    	kingScore = 30000;
-		    }
+		   
 		    
 		    
 		    if(player_id == TablutBoardState.SWEDE) {
@@ -139,11 +139,6 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		    }
         catch(Exception e) {
         	
-        }
-        
-        // if the moves leads to winning ... do it
-        if (clonedBS.getWinner() == player_id) {
-            score = Integer.MAX_VALUE;
         }
     	
 		return score;
