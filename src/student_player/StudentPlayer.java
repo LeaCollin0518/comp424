@@ -1,7 +1,5 @@
 package student_player;
 
-import java.util.Random;
-
 import boardgame.Move;
 import boardgame.Player;
 import tablut.TablutBoardState;
@@ -30,7 +28,7 @@ public class StudentPlayer extends TablutPlayer {
         // Is random the best you can do?
         Move myMove = bs.getRandomMove();
 
-        myMove = (MyTools.minimax(bs, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, true)).first();
+        myMove = (MyTools.minimax(bs, 2, Integer.MIN_VALUE, Integer.MAX_VALUE, true)).first();
         
         // however if the Muscovites are going first, always do same first move
         if (player_id == TablutBoardState.MUSCOVITE) {
@@ -53,10 +51,10 @@ public class StudentPlayer extends TablutPlayer {
     	int numWins = 0;
     	while(i < 500) {
     		TablutBoardState b = new TablutBoardState();
-            Player swede = new StudentPlayer();
+            Player swede = new RandomTablutPlayer();
             swede.setColor(TablutBoardState.SWEDE);
 
-            Player muscovite = new RandomTablutPlayer();
+            Player muscovite = new StudentPlayer();
             muscovite.setColor(TablutBoardState.MUSCOVITE);
             
             Player player = muscovite;

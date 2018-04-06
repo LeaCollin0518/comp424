@@ -1,11 +1,7 @@
 package student_player;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import boardgame.Move;
-import coordinates.Coord;
 import coordinates.Coordinates;
 import tablut.TablutBoardState;
 import tablut.TablutMove;
@@ -35,7 +31,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    }
     
    	public static Pair<TablutMove, Integer> minimax(TablutBoardState state, int depth, int alpha, int beta, boolean maxPlayer) {
-   		if(depth == 2 || state.gameOver()) {
+   		if(depth == 0 || state.gameOver()) {
    			Integer score = evaluateBoard(state, maxPlayer);
    			return new Pair<>(null, score);
    		}
@@ -48,7 +44,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    			for(TablutMove move : options) {
    				TablutBoardState clone = (TablutBoardState) state.clone();
    				clone.processMove(move);
-   				Pair<TablutMove, Integer> bestSoFar = minimax(clone, depth + 1, alpha, beta, false);
+   				Pair<TablutMove, Integer> bestSoFar = minimax(clone, depth - 1, alpha, beta, false);
    				if (v < bestSoFar.second()) {
    					v = bestSoFar.second();
    					alpha = Math.max(alpha, v);
@@ -71,7 +67,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    			for(TablutMove move : options) {
    				TablutBoardState clone = (TablutBoardState) state.clone();
    				clone.processMove(move);
-   				Pair<TablutMove, Integer> score = minimax(clone, depth + 1, alpha, beta, true);
+   				Pair<TablutMove, Integer> score = minimax(clone, depth - 1, alpha, beta, true);
    				if(v > score.second()) {
    					v = score.second();
    					beta = Math.min(beta, v);
