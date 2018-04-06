@@ -30,7 +30,7 @@ public class StudentPlayer extends TablutPlayer {
         // Is random the best you can do?
         Move myMove = bs.getRandomMove();
 
-        myMove = (MyTools.minimax(bs, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, true, bs.getTurnPlayer())).first();
+        myMove = (MyTools.minimax(bs, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, true)).first();
         
         // however if the Muscovites are going first, always do same first move
         if (player_id == TablutBoardState.MUSCOVITE) {
