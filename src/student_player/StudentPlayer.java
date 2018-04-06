@@ -51,7 +51,7 @@ public class StudentPlayer extends TablutPlayer {
     	int numWins = 0;
     	while(i < 500) {
     		TablutBoardState b = new TablutBoardState();
-            Player swede = new RandomTablutPlayer();
+            Player swede = new GreedyTablutPlayer();
             swede.setColor(TablutBoardState.SWEDE);
 
             Player muscovite = new StudentPlayer();
@@ -71,8 +71,7 @@ public class StudentPlayer extends TablutPlayer {
             	numWins++;
             }
             else {
-            	System.out.println("Lost: " + i);
-            	System.out.println("Number of moves: " + b.getTurnNumber());
+            	break;
             }
             //System.out.println(TablutMove.getPlayerName(b.getWinner()) + " WIN!");
             i++;
