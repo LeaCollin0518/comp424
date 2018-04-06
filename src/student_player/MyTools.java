@@ -31,7 +31,13 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         if (newNumberOfOpponentPieces < minNumberOfOpponentPieces) {
         	int numberCaptured = minNumberOfOpponentPieces - newNumberOfOpponentPieces; 
         	// could change amount I multiply this by 
-        	captured = numberCaptured*15;
+        	if(bs.getTurnNumber() > 25) {
+        		score += numberCaptured*20;
+        	}
+        	else {
+        		score += numberCaptured*15;
+        	}
+        	
         }
         
         int numberOfPieces = bs.getNumberPlayerPieces(player_id);
@@ -39,7 +45,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         
         // penalize board if we lost players
         if (newNumberOfPieces < numberOfPieces) {
-        	score -= 15;
+        	score -= 10;
         }
 
         // will be used for checking if capture is possible
@@ -76,8 +82,6 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     
         
         int minDistance = Coordinates.distanceToClosestCorner(startKingPos);
-
-        score += captured;
         
         if(player_id == TablutBoardState.MUSCOVITE) {
             score += captureCenter; 
@@ -87,7 +91,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         // has the king moved yet?
         else {
         	if(clonedBS.getTurnNumber() > 30 && !startKingPos.equals(endKingPos)) {
-        		score += 100;
+        		score += 50;
         	}	
         }
         
