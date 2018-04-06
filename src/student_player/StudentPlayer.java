@@ -28,7 +28,7 @@ public class StudentPlayer extends TablutPlayer {
         // Is random the best you can do?
         Move myMove = bs.getRandomMove();
 
-        myMove = MyTools.minimax(bs, bs.getTurnPlayer());
+        myMove = MyTools.minimax(bs, bs.getTurnPlayer(), Integer.MIN_VALUE, Integer.MAX_VALUE);
         
         // however if the Muscovites are going first, always do same first move
         if (player_id == TablutBoardState.MUSCOVITE) {
@@ -49,12 +49,12 @@ public class StudentPlayer extends TablutPlayer {
     public static void main(String[] args) {
     	int i = 0;
     	int numWins = 0;
-    	while(i < 500) {
+    	while(i < 1) {
     		TablutBoardState b = new TablutBoardState();
-            Player swede = new GreedyTablutPlayer();
+            Player swede = new StudentPlayer();
             swede.setColor(TablutBoardState.SWEDE);
 
-            Player muscovite = new StudentPlayer();
+            Player muscovite = new RandomTablutPlayer();
             muscovite.setColor(TablutBoardState.MUSCOVITE);
             
             Player player = muscovite;
@@ -66,6 +66,8 @@ public class StudentPlayer extends TablutPlayer {
                 //b.printBoard();
             }
             if(b.getWinner() == 1) {
+            	System.out.println("Game: " + i);
+            	System.out.println("Number of moves: " + b.getTurnNumber());
             	numWins++;
             }
             //System.out.println(TablutMove.getPlayerName(b.getWinner()) + " WIN!");

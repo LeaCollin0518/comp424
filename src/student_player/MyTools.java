@@ -15,18 +15,41 @@ public class MyTools {
 public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) {
     	
     	int score = 0;
-    	int captured = 0;
     	int captureCenter = 0;
+    	
+    	// get my player id
     	int player_id = clonedBS.getTurnPlayer();
     	    	
     	 // look at opponent and its number of pieces
-        int opponent = clonedBS.getOpponent();
-        int minNumberOfOpponentPieces = bs.getNumberPlayerPieces(opponent);
+        int opponent = clonedBS.getOpponent();        
+        int numberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
+        // Check if any opponents were captured, move better if we capture more
+        
+        if(player_id == TablutBoardState.SWEDE) {
+        	if(numberOfOpponentPieces < 16) {
+        		int numberCaptured = 16 - numberOfOpponentPieces;
+        		score += numberCaptured*20;
+        	}
+        }
+        else {
+        	if(numberOfOpponentPieces < 9) {
+        		int numberCaptured = 9 - numberOfOpponentPieces;
+        		score += numberCaptured*30;
+        	}
+        }
+        
+        int numberOfPieces = bs.getNumberPlayerPieces(player_id);
+        int newNumberOfPieces = clonedBS.getNumberPlayerPieces(player_id);
+        
+        // penalize board if we lost players
+        if (newNumberOfPieces < numberOfPieces) {
+        	score -= 50*(numberOfPieces - newNumberOfPieces);
+        }
 
         // will be used for checking if capture is possible
         Coord center = Coordinates.get(4,4);
-        Coord startKingPos = bs.getKingPosition();
         Coord endKingPos = clonedBS.getKingPosition();
+        
         
         List<Coord> corners = Coordinates.getCorners();
         List<Coord> centerNeighbors = Coordinates.getNeighbors(center);
@@ -37,54 +60,33 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         		cornerNeighbors.add(neighbor);
         	}
         }
-    	
-        // Check how many opponent pieces there are now, maybe we captured some!
-        int newNumberOfOpponentPieces = clonedBS.getNumberPlayerPieces(opponent);
 
-        int numberOfPieces = clonedBS.getNumberPlayerPieces(player_id);
         
-        if (newNumberOfOpponentPieces < minNumberOfOpponentPieces) {
-        	int numberCaptured = minNumberOfOpponentPieces - newNumberOfOpponentPieces; 
-        	// could change amount I multiply this by 
-        	if(player_id == TablutBoardState.MUSCOVITE) {
-        		captured = numberCaptured*5; 
-        	}
-        	else {
-        		captured = numberCaptured*3;
-        	}
-        }
         
         // for all positions next to the center, see if you can get rid of an enemy
         //  (prioritize this over other kinds of captures)
         
         for (Coord neighbor : centerNeighbors) {
         	if (bs.isOpponentPieceAt(neighbor) && !clonedBS.isOpponentPieceAt(neighbor)) {
-        		captureCenter = 20;
+        		captureCenter = 50;
         	}
         }
         
-        if(player_id == TablutBoardState.SWEDE) {
-        	for (Coord neighbor : cornerNeighbors) {
-            	if (bs.isOpponentPieceAt(neighbor) && clonedBS.coordIsEmpty(neighbor)) {
-            		score += 100;
-            	}
-            }
+    	for (Coord neighbor : cornerNeighbors) {
+        	if (bs.isOpponentPieceAt(neighbor) && clonedBS.coordIsEmpty(neighbor)) {
+        		score += 200;
+        	}
         }
-    
-        
-        int minDistance = Coordinates.distanceToClosestCorner(startKingPos);
-
-        score += captured;
-        score -= newNumberOfOpponentPieces*100;
-        score += numberOfPieces*150;
-        
+    	
         if(player_id == TablutBoardState.MUSCOVITE) {
             score += captureCenter; 
-            score -= minDistance;
         } 
-        
+
+        // has the king moved yet?
         else {
-        	score += minDistance;
+        	if(clonedBS.getTurnNumber() > 10 && !endKingPos.equals(center)) {
+        		score += 250;
+        	}	
         }
         
         try {
@@ -98,32 +100,31 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		    	}
 		    }
 		    
-		   if (moveDistance < minDistance && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
-		        minDistance = moveDistance;
-		        kingScore += 20;
+		    if (moveDistance < 8 && !cornerNeighbors.contains(endKingPos) && presentOpponents.isEmpty()) {
+		        kingScore += 50;
+		    }
+		    else if(presentOpponents.size() > 1){
+		    	kingScore -= 500;
 		    }
 		    else {
-		    	kingScore -= 30;
+		    	kingScore -= 200;
 		    }
 		    
 		    HashSet<Coord> opponentsAt = clonedBS.getOpponentPieceCoordinates();
 		    
-		    // check to see if final position is at the edge (but is not a corner
+		    // check to see if final position is at the edge (but is not a corner) and there is no one in the lane...Swedes win!
 		   if ((endKingPos.x == 0 || endKingPos.x == 8 || endKingPos.y == 0 || endKingPos.y == 8) && !cornerNeighbors.contains(endKingPos)) {
 		    	for(Coord enemy : opponentsAt) {
 	    			if (enemy.x != 0 || enemy.x != 8 || enemy.y != 8 || enemy.y != 8) {
-	        			kingScore += 3000;
+	        			kingScore += 5000;
 	        		}
+	    			else if(cornerNeighbors.contains(endKingPos)) {
+	    		    	kingScore = -30000;
+	    		    }
 		    	}
 		    
 		   }
-		    
-		    if(cornerNeighbors.contains(endKingPos)) {
-		    	kingScore = -30000;
-		    }
-		    if(Coordinates.isCorner(endKingPos)) {
-		    	kingScore = 30000;
-		    }
+		   
 		    
 		    
 		    if(player_id == TablutBoardState.SWEDE) {
@@ -138,17 +139,12 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         catch(Exception e) {
         	
         }
-
-        // if the moves leads to winning ... do it
-        if (clonedBS.getWinner() == player_id) {
-            score = Integer.MAX_VALUE;
-        }
     	
 		return score;
     	
     }
     
-    public static Move minimax(TablutBoardState state, int player) {
+    public static Move minimax(TablutBoardState state, int player, int alpha, int beta) {
     	Move myMove = state.getRandomMove();
     	int depth = 0;
     	int bestScore = Integer.MIN_VALUE;
@@ -160,9 +156,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 
             // Process that move, as if we actually made it happen.
             cloneBS.processMove(move);
-           // System.out.println("Original state turn player : " + state.getTurnPlayer());
-            // System.out.println("Cloned state turn player: " + cloneBS.getTurnPlayer());
-            int moveScore = MIN(state, cloneBS, depth + 1, player);
+            int moveScore = MIN(state, cloneBS, depth + 1, player, alpha, beta);
             if (moveScore > bestScore) {
             	bestScore = moveScore;
             	myMove = move;
@@ -172,8 +166,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     	return myMove;
     }
     
-    public static int MIN(TablutBoardState state, TablutBoardState clonedBS, int depth, int player) {
-    	int bestScore;
+    public static int MIN(TablutBoardState state, TablutBoardState clonedBS, int depth, int player, int alpha, int beta) {
     	if(clonedBS.getWinner() == 1 || clonedBS.getWinner() == 0) {
     		if(clonedBS.getWinner() == player) {
     			return Integer.MAX_VALUE;
@@ -186,24 +179,24 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     		return -1*evaluateBoard(state, clonedBS);
     	}
     	else {
-    		bestScore = Integer.MAX_VALUE;
     		List<TablutMove> options = clonedBS.getAllLegalMoves();
     		for(TablutMove move : options) {
     			TablutBoardState bs = (TablutBoardState) clonedBS.clone();
     			bs.processMove(move);
-    			int moveScore = MAX(clonedBS, bs, depth + 1, player);
-    			if(moveScore < bestScore) {
-    				bestScore = moveScore;
+    			int moveScore = MAX(clonedBS, bs, depth + 1, player, alpha, beta);
+    			if(moveScore < beta) {
+    				beta = moveScore;
+    			}
+    			if(beta <= alpha) {
+    				return beta;
     			}
     		}
+    		return beta;
     		
     	}
-    	
-    	return bestScore;
     }
     
-    public static int MAX(TablutBoardState state, TablutBoardState clonedBS, int depth, int player) {
-    	int bestScore;
+    public static int MAX(TablutBoardState state, TablutBoardState clonedBS, int depth, int player, int alpha, int beta) {
     	if(clonedBS.getWinner() == 1 || clonedBS.getWinner() == 0) {
     		if(clonedBS.getWinner() == player) {
     			return Integer.MAX_VALUE;
@@ -216,20 +209,21 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
     		return evaluateBoard(state, clonedBS);
     	}
     	else {
-    		bestScore = Integer.MIN_VALUE;
     		List<TablutMove> options = clonedBS.getAllLegalMoves();
     		for(TablutMove move : options) {
     			TablutBoardState bs = (TablutBoardState) clonedBS.clone();
     			bs.processMove(move);
-    			int moveScore = MIN(clonedBS, bs, depth + 1, player);
-    			if(moveScore > bestScore) {
-    				bestScore = moveScore;
+    			int moveScore = MIN(clonedBS, bs, depth + 1, player, alpha, beta);
+    			if(moveScore > alpha) {
+    				alpha = moveScore;
+    			}
+    			if(alpha >= beta) {
+    				return alpha;
     			}
     		}
+    		return alpha;
     		
     	}
-    	
-    	return bestScore;
     }
 
 }
