@@ -28,7 +28,7 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         if(player_id == TablutBoardState.SWEDE) {
         	if(numberOfOpponentPieces < 16) {
         		int numberCaptured = 16 - numberOfOpponentPieces;
-        		score += numberCaptured*20;
+        		score += numberCaptured*30;
         	}
         }
         else {
@@ -48,8 +48,13 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 
         // will be used for checking if capture is possible
         Coord center = Coordinates.get(4,4);
+        
+        Coord startKingPos = bs.getKingPosition();
         Coord endKingPos = clonedBS.getKingPosition();
         
+        if(!startKingPos.equals(endKingPos)) {
+        	System.out.println("FUCK");
+        }
         
         List<Coord> corners = Coordinates.getCorners();
         List<Coord> centerNeighbors = Coordinates.getNeighbors(center);
@@ -83,11 +88,20 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
         } 
 
         // has the king moved yet?
-        else {
-        	if(clonedBS.getTurnNumber() > 10 && !endKingPos.equals(center)) {
+        else if(clonedBS.getTurnNumber() > 12 && !endKingPos.equals(center)) {
         		score += 250;
-        	}	
         }
+        if(player_id == TablutBoardState.SWEDE && clonedBS.getTurnNumber() > 20) {
+        	for(Coord centerNeighbor : centerNeighbors) {
+        		if (!endKingPos.equals(center) && !endKingPos.equals(centerNeighbor)) {
+        			score += 500;
+        		}
+        	}
+        }
+        if(player_id == TablutBoardState.SWEDE && clonedBS.getTurnNumber() > 30) {
+        	score += 1000;
+        }
+
         
         try {
 	        List<Coord> kingNeighbors = Coordinates.getNeighbors(endKingPos);
@@ -104,13 +118,26 @@ public static int evaluateBoard(TablutBoardState bs, TablutBoardState clonedBS) 
 		        kingScore += 50;
 		    }
 		    else if(presentOpponents.size() > 1){
-		    	kingScore -= 500;
+		    	kingScore -= 1000;
 		    }
-		    else {
+		    else if (presentOpponents.size() == 1){
 		    	kingScore -= 200;
 		    }
 		    
 		    HashSet<Coord> opponentsAt = clonedBS.getOpponentPieceCoordinates();
+		    HashSet<Coord> myPiecesAt = clonedBS.getPlayerPieceCoordinates();
+		    List<Boolean> myPiecesPresent = new ArrayList<>();
+		    
+		    for(Coord myPiece : myPiecesAt) {
+		    	for (Coord neighbor : kingNeighbors) {
+		    		if(neighbor.equals(myPiece)) {
+		    			myPiecesPresent.add(true);
+		    		}
+		    	}
+		    	if(myPiecesPresent.size() >= 3 && endKingPos.x == 0 || endKingPos.x == 8 || endKingPos.y == 0 || endKingPos.x == 8) {
+		    		kingScore -= 1000;
+		    	}
+		    }
 		    
 		    // check to see if final position is at the edge (but is not a corner) and there is no one in the lane...Swedes win!
 		   if ((endKingPos.x == 0 || endKingPos.x == 8 || endKingPos.y == 0 || endKingPos.y == 8) && !cornerNeighbors.contains(endKingPos)) {

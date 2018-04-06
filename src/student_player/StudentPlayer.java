@@ -49,7 +49,7 @@ public class StudentPlayer extends TablutPlayer {
     public static void main(String[] args) {
     	int i = 0;
     	int numWins = 0;
-    	while(i < 1) {
+    	while(i < 50) {
     		TablutBoardState b = new TablutBoardState();
             Player swede = new StudentPlayer();
             swede.setColor(TablutBoardState.SWEDE);
@@ -69,6 +69,10 @@ public class StudentPlayer extends TablutPlayer {
             	System.out.println("Game: " + i);
             	System.out.println("Number of moves: " + b.getTurnNumber());
             	numWins++;
+            }
+            else {
+            	System.out.println("Lost :(");
+            	System.out.println("Number of moves : " + b.getTurnNumber());
             }
             //System.out.println(TablutMove.getPlayerName(b.getWinner()) + " WIN!");
             i++;
