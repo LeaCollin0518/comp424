@@ -58,7 +58,13 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    					break;
    				}
    			}
-   			return new Pair<>(bestMove, v);
+   			if(bestMove == null) {
+   				TablutMove random = (TablutMove) state.getRandomMove();
+   				return new Pair<>(random, v);
+   			}
+   			else {
+   				return new Pair<>(bestMove, v);
+   			}
    		}
    		else {
    			Integer v = Integer.MAX_VALUE;
@@ -75,7 +81,13 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    					break;
    				}
    			}
-   			return new Pair<>(bestMove, v);
+   			if(bestMove == null) {
+   				TablutMove random = (TablutMove) state.getRandomMove();
+   				return new Pair<>(random, v);
+   			}
+   			else {
+   				return new Pair<>(bestMove, v);
+   			}
    		}
    	}
 
