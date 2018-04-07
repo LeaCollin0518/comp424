@@ -1,6 +1,7 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import coordinates.Coord;
@@ -11,8 +12,10 @@ import tablut.TablutMove;
 public class MyTools {
     
 public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
+		// score of current board to be returned to minimax
     	Integer score = 0;
     	
+    	// get the player for this board, the opponent, and number of pieces for each
     	int player_id = bs.getTurnPlayer();
 		int opponent = bs.getOpponent();
 		int numOpponents = bs.getNumberPlayerPieces(opponent);
@@ -29,22 +32,24 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
 			}
 		}
 			
-		
 		//strategy for the swedes
 		if(bs.getTurnPlayer() == TablutBoardState.SWEDE) {
     		
+			// good to capture opponents
     		if(numOpponents < 16) {
     			int numCaptured = 5*(16 - numOpponents);
     			score += numCaptured;
     		}
+    		// bad to have lost players
     		if(numPieces < 9) {
     			score -= 3*(9 - numPieces);
     		}
     		try {
+    			// good if we have gotten closer to a corner
     			Coord kingPos = bs.getKingPosition();
     			score -= 5 * Coordinates.distanceToClosestCorner(kingPos);
 
-    			//if the king move
+    			//if the king moved after a certain number of turns
     			if(bs.getTurnNumber() > 10 && !kingPos.equals(center)) {
     				score += 5;
     			}
@@ -52,7 +57,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
     				score += 5;
     			}
     			
-    			//is the king near any enemies, if so, how many?
+    			// is the king near any enemies, if so, how many?
     			List<Coord> kingNeighbors = Coordinates.getNeighbors(kingPos);
     			List<Boolean> opponentPresent = new ArrayList<>();
     			if(!kingPos.equals(center)) {
@@ -94,14 +99,25 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
     	}
 		// strategy for the muscovites
 		else {
+			// more aggressive capturing strategy
 			if(numOpponents < 9) {
 				int numCaptured = 8*(9 - numOpponents);
 				score += numCaptured;
 			}
+			// still bad to lose players
 			if(numPieces < 16) {
-				score -=3*(16 - numPieces);
+				score -=5*(16 - numPieces);
 			}
+			
+			// don't hang around the corners too much
+			for(Coord cornerNeighbor : cornerNeighbors) {
+				if(!bs.isOpponentPieceAt(cornerNeighbor) && !bs.coordIsEmpty(cornerNeighbor)) {
+					score -= 10;
+				}
+			}	
+			
 			try {
+				// the closer the king is to a corner, the worse
     			Coord kingPos = bs.getKingPosition();
     			score -= 5 * (8 - Coordinates.distanceToClosestCorner(kingPos));
 
@@ -110,11 +126,10 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
 
     			// is there a muscovite next to the king? good
 				for (Coord kingNeighbor : kingNeighbors) {
-    				if(!bs.isOpponentPieceAt(kingNeighbor) && bs.coordIsEmpty(kingNeighbor)) {
+    				if(!bs.isOpponentPieceAt(kingNeighbor) && !bs.coordIsEmpty(kingNeighbor)) {
     					score += 10;
     				}
-    			}   			
-    			
+    			}
     		}
     		catch(Exception e) {
     			score += 0;
@@ -122,6 +137,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
 		}
 		
     	if(maxPlayer) {
+    		// check if the game leads to a win
     		if(bs.gameOver()) {
     			return bs.getWinner() == bs.getTurnPlayer() ? Integer.MAX_VALUE : Integer.MIN_VALUE;
     		}
@@ -131,7 +147,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
     		if(bs.gameOver()) {
     			return bs.getWinner() == bs.getTurnPlayer() ? Integer.MIN_VALUE : Integer.MAX_VALUE;
     		}
-    		score += numPieces - numOpponents;
+    		// return negative of score if min player, more negative ---> better
     		return -1*score;
     	}
     	
@@ -139,7 +155,13 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
     	
    }
     
+	/*
+	 * my implementation of minimax with alpha beta pruning
+	 * returns the best move along with its score
+	 */
    	public static Pair<TablutMove, Integer> minimax(TablutBoardState state, int depth, int alpha, int beta, boolean maxPlayer) {
+   		
+   		// if we've reached the maximum depth or the game is over, finally evaluate the board
    		if(depth == 0 || state.gameOver()) {
    			Integer score = evaluateBoard(state, maxPlayer);
    			return new Pair<>(null, score);
@@ -148,9 +170,12 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
    		TablutMove bestMove = null;
    		
    		List<TablutMove> options = state.getAllLegalMoves();
+   		
    		if(maxPlayer) {
+   			// iterate through all the possible moves from the current state
    			for(TablutMove move : options) {
    				TablutBoardState clone = (TablutBoardState) state.clone();
+   				// process the move as if it actually happened, rest follows minimax algo
    				clone.processMove(move);
    				Pair<TablutMove, Integer> score = minimax(clone, depth - 1, alpha, beta, false);
    				if (score.second() > alpha) {
