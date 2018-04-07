@@ -51,10 +51,10 @@ public class StudentPlayer extends TablutPlayer {
     	int numWins = 0;
     	while(i < 500) {
     		TablutBoardState b = new TablutBoardState();
-            Player swede = new StudentPlayer();
+            Player swede = new RandomTablutPlayer();
             swede.setColor(TablutBoardState.SWEDE);
 
-            Player muscovite = new RandomTablutPlayer();
+            Player muscovite = new StudentPlayer();
             muscovite.setColor(TablutBoardState.MUSCOVITE);
             
             Player player = muscovite;
@@ -65,7 +65,7 @@ public class StudentPlayer extends TablutPlayer {
                 //System.out.println("\nMOVE PLAYED: " + m.toPrettyString());
                 //b.printBoard();
             }
-            if(b.getWinner() == 1) {
+            if(b.getWinner() == 0) {
             	System.out.println("Game: " + i);
             	System.out.println("Number of moves: " + b.getTurnNumber());
             	numWins++;
