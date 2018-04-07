@@ -43,36 +43,4 @@ public class StudentPlayer extends TablutPlayer {
         // Return your move to be processed by the server.
         return myMove;
 	}
-        
-
-	// For Debugging purposes only.
-    public static void main(String[] args) {
-    	int i = 0;
-    	int numWins = 0;
-    	while(i < 500) {
-    		TablutBoardState b = new TablutBoardState();
-            Player swede = new StudentPlayer();
-            swede.setColor(TablutBoardState.SWEDE);
-
-            Player muscovite = new GreedyTablutPlayer();
-            muscovite.setColor(TablutBoardState.MUSCOVITE);
-            
-            Player player = muscovite;
-            while (!b.gameOver()) {
-                Move m = player.chooseMove(b);
-                b.processMove((TablutMove) m);
-                player = (player == muscovite) ? swede : muscovite;
-                //System.out.println("\nMOVE PLAYED: " + m.toPrettyString());
-                //b.printBoard();
-            }
-            if(b.getWinner() == 1) {
-            	System.out.println("Game: " + i);
-            	System.out.println("Number of moves: " + b.getTurnNumber());
-            	numWins++;
-            }
-            //System.out.println(TablutMove.getPlayerName(b.getWinner()) + " WIN!");
-            i++;
-    	}
-    	System.out.println("Number of wins: " + numWins); 
-    }
 }
