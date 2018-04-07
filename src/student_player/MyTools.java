@@ -47,7 +47,7 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
     		try {
     			// good if we have gotten closer to a corner
     			Coord kingPos = bs.getKingPosition();
-    			score -= 5 * Coordinates.distanceToClosestCorner(kingPos);
+    			score -= 3 * Coordinates.distanceToClosestCorner(kingPos);
 
     			//if the king moved after a certain number of turns
     			if(bs.getTurnNumber() > 10 && !kingPos.equals(center)) {
@@ -74,23 +74,54 @@ public static Integer evaluateBoard(TablutBoardState bs, boolean maxPlayer) {
         			}
     			}
     			
-    			/*HashSet<Coord> opponentLocations = bs.getOpponentPieceCoordinates();
-    			List<Boolean> opponentAtEdge = new ArrayList<>();
-    			if(kingPos.x == 0 || kingPos.x == 8 || kingPos.y == 0 || kingPos.y == 8){
-    				for(Coord enemy : opponentLocations) {
-    					if(enemy.x == 0 || enemy.x == 8 || enemy.y == 0 || enemy.y == 8) {
-    						opponentAtEdge.add(false);
-    					}
+    			Coord foo = null;
+    			
+    			// if the king and another Swede are at the two positions next to a corner, v good
+    			if(kingPos.x == 0 || kingPos.x == 8) {
+    				if(kingPos.y == 1) {
+    					foo = Coordinates.get(kingPos.x, kingPos.y + 1);
     				}
-    				if(opponentAtEdge.contains(true)) {
-    					for(boolean b : opponentAtEdge) {
-    						System.out.println(b);
-    					}
+    				else if(kingPos.y == 7) {
+    					foo = Coordinates.get(kingPos.x, kingPos.y - 1);
     				}
-    			}*/
+    				
+    				if(!bs.isOpponentPieceAt(foo) && !bs.coordIsEmpty(foo)) {
+    					score += 2000;
+    				}
+    			}
+    			else if (kingPos.y == 0 || kingPos.y == 8) {
+    				if(kingPos.x == 1) {
+    					foo = Coordinates.get(kingPos.x + 1, kingPos.y);
+    				}
+    				else if (kingPos.x == 8) {
+    					foo = Coordinates.get(kingPos.x - 1, kingPos.y);
+    				}
+    				if(!bs.isOpponentPieceAt(foo) && !bs.coordIsEmpty(foo)) {
+    					score += 2000;
+    				}
+    			}
     			
-    			
-    			
+    			// if the king is at an edge and there are no opponents at the edge, also v good
+    			int enemiesAtEdge = 0;
+    			HashSet<Coord> opponentLocation = bs.getOpponentPieceCoordinates();
+    			for (Coord piece : opponentLocation) {
+    				if (piece.x == 0 && kingPos.x == 0) {
+    					enemiesAtEdge++;
+    				}
+    				else if (piece.x == 8 && kingPos.x == 8) {
+    					enemiesAtEdge++;
+    				}
+    				else if (piece.y == 0 && kingPos.y == 0) {
+    					enemiesAtEdge++;
+    				}
+    				else if (piece.y == 8 && kingPos.y == 8) {
+    					enemiesAtEdge++;
+    				}
+    				
+    			}
+    			if(enemiesAtEdge == 0 && (kingPos.x == 0 || kingPos.x == 8 || kingPos.y == 0 || kingPos.y == 8)) {
+					score += 2500;
+				}	
     		}
     		catch(Exception e) {
     			score += 0;
